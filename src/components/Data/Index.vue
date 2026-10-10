@@ -2,6 +2,8 @@
 import { computed, ref } from 'vue'
 import { useDataStore } from '@/stores/data'
 
+import { createWorker as createTesseractWorker } from 'tesseract.js'
+
 import { SourceEdition, RestrictionFlag } from '@/types'
 
 const data = useDataStore()
@@ -42,7 +44,42 @@ const editSpellEdition = ref(SourceEdition.DS)
 const editSpellCharacterName = ref('')
 const editSpellRestrictions = ref([] as number[])
 const editSpellGameState = ref(undefined as number|undefined)
-const editSpellCodes = ref('')
+const editSpellCodeMethod = ref(1)
+const editSpellCodeInput = ref('')
+const editSpellCodeUpload = ref([] as File[])
+
+const editSpellCodes = computed(() => {
+    switch (editSpellCodeMethod.value) {
+        // Direct input
+        case 1: {
+            return editSpellCodeInput.value.split("\n")
+        }
+        // Image upload
+        case 2: {
+            const codes = [] as string[]
+
+            for (const item of imageUploadCarouselItems.value) {
+                // Store a version of the code without any whitespace
+                const stripped = item.parsedText.replace(/\s+/g, '')
+
+                // If the item isn't 17 characters long, we can't use it
+                if (stripped.length !== 17) {
+                    continue
+                }
+
+                // Apply the standard splits to help visually
+                const formatted = `${stripped.substring(0,3)}　${stripped.substring(3,6)}　${stripped.substring(6,10)}　${stripped.substring(10,13)}　${stripped.substring(13,16)}　${stripped.substring(16)}`
+                
+                codes.push(formatted)
+            }
+
+            return codes
+        }
+        default: {
+            return []
+        }
+    }
+})
 
 const saveNewSpell = function() {
     // Make sure we have a selected game state
@@ -62,8 +99,7 @@ const saveNewSpell = function() {
     }
 
     // Add each spell identified
-    const codes = editSpellCodes.value.split("\n")
-    for (let code of codes) {
+    for (let code of editSpellCodes.value) {
         code = code.trim()
         if (code.length === 0) {
             continue
@@ -71,6 +107,53 @@ const saveNewSpell = function() {
 
         data.addSpell(code, editSpellEdition.value, editSpellCharacterName.value, restrictions, editSpellGameState.value)
     }
+
+    // Reset our input values
+    editSpellCharacterName.value = ''
+    editSpellRestrictions.value = []
+    editSpellGameState.value = undefined
+    editSpellCodeMethod.value = 1
+    editSpellCodeInput.value = ''
+    editSpellCodeUpload.value = []
+}
+
+interface ImageUploadCarouselItem {
+    dataUrl: string
+    parsedText: string
+}
+const imageUploadCarouselItems = ref([] as ImageUploadCarouselItem[])
+const imageUploadCarouselCurrentItemIndex = ref(0)
+const imageUploadCarouselCurrentItem = computed(() => (imageUploadCarouselItems.value.length > imageUploadCarouselCurrentItemIndex.value) ? imageUploadCarouselItems.value[imageUploadCarouselCurrentItemIndex.value] : undefined )
+const imageUploadCarouselCurrentItemStrippedLen = computed(() => {
+    if (imageUploadCarouselCurrentItem.value == undefined) {
+        return 0
+    } else {
+        return imageUploadCarouselCurrentItem.value.parsedText.replace(/\s+/g, '').length
+    }
+})
+const onSpellImagesUpload = async function() {
+    imageUploadCarouselItems.value = []
+    imageUploadCarouselCurrentItemIndex.value = 0
+
+    const worker = await createTesseractWorker('jpn')
+    await worker.setParameters({
+        tessedit_char_whitelist: data.codeCharacters + '「',
+    })
+
+    for (const f of editSpellCodeUpload.value) {
+        const result = await worker.recognize(f)
+
+        const reader = new FileReader()
+        reader.onloadend = () => {
+            imageUploadCarouselItems.value.push({
+                dataUrl: reader.result as string,
+                parsedText: result.data.text,
+            })
+        }
+        reader.readAsDataURL(f)
+    }
+
+    await worker.terminate()
 }
 </script>
 
@@ -199,12 +282,64 @@ const saveNewSpell = function() {
                                                     </v-row>
                                                     <v-row>
                                                         <v-col>
-                                                            <v-textarea
-                                                                v-model="editSpellCodes"
-                                                                label="Code(s)"
-                                                                placeholder="Separate multiples by newline"
-                                                            >
-                                                            </v-textarea>
+                                                            <v-tabs v-model="editSpellCodeMethod">
+                                                                <v-tab :value="1">Direct Entry</v-tab>
+                                                                <v-tab :value="2">From Image(s)</v-tab>
+                                                            </v-tabs>
+                                                            <v-tabs-window v-model="editSpellCodeMethod">
+                                                                <v-tabs-window-item :value="1">
+                                                                    <v-textarea
+                                                                        v-model="editSpellCodeInput"
+                                                                        label="Code(s)"
+                                                                        placeholder="Separate multiples by newline"
+                                                                    >
+                                                                    </v-textarea>
+                                                                </v-tabs-window-item>
+                                                                <v-tabs-window-item :value="2">
+                                                                    <template v-if="editSpellCodeUpload.length > 0">
+                                                                        <v-carousel
+                                                                            v-model="imageUploadCarouselCurrentItemIndex"
+                                                                        >
+                                                                            <v-carousel-item
+                                                                                v-for="(item, i) of imageUploadCarouselItems"
+                                                                                :src="item.dataUrl"
+                                                                                :value="i"
+                                                                                cover
+                                                                            >
+                                                                                <template #placeholder>
+                                                                                    <div class="d-flex align-center justify-center fill-height">
+                                                                                        <v-progress-circular
+                                                                                            color="primary"
+                                                                                            indeterminate
+                                                                                            size="100"
+                                                                                        />
+                                                                                    </div>
+                                                                                </template>
+                                                                            </v-carousel-item>
+                                                                        </v-carousel>
+                                                                        <v-textarea
+                                                                            v-if="imageUploadCarouselCurrentItem"
+                                                                            v-model="imageUploadCarouselCurrentItem.parsedText"
+                                                                        >
+                                                                            <template #append-inner>
+                                                                                <v-chip
+                                                                                    size="x-large"
+                                                                                    :color="imageUploadCarouselCurrentItemStrippedLen === 17 ? 'success' : 'error'"
+                                                                                >
+                                                                                    {{ imageUploadCarouselCurrentItemStrippedLen }}/17
+                                                                                </v-chip>
+                                                                            </template>
+                                                                        </v-textarea>
+                                                                    </template>
+                                                                    <v-file-upload
+                                                                        v-model="editSpellCodeUpload"
+                                                                        multiple
+                                                                        @update:model-value="onSpellImagesUpload"
+                                                                        density="compact"
+                                                                        clearable
+                                                                    />
+                                                                </v-tabs-window-item>
+                                                            </v-tabs-window>
                                                         </v-col>
                                                     </v-row>
                                                 </v-container>
