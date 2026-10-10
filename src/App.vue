@@ -2,6 +2,7 @@
 // Prep our list of overall navigation tabs
 const tabs = [
     { name: 'Data', to: '/data' },
+    { name: 'Analysis', to: '/analysis' },
 ]
 </script>
 

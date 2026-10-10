@@ -91,6 +91,19 @@ export const useDataStore = defineStore('data', () => {
         return strings.join(' ')
     }
 
+    function getBitsFromCode(code: string) {
+        // Get a binary string first, removing spaces
+        const stringVersion = getBinaryStringFromCode(code).replace(/\s+/g,'')
+
+        // Make our bit array from the numeric version of each character
+        const bits = [] as number[]
+        for (const char of stringVersion) {
+            bits.push(parseInt(char))
+        }
+
+        return bits
+    }
+
     return {
         gameStates,
         addGameState,
@@ -101,5 +114,6 @@ export const useDataStore = defineStore('data', () => {
         codeCharacters,
         nameCharacters,
         getBinaryStringFromCode,
+        getBitsFromCode,
     }
 })
