@@ -3,6 +3,7 @@
 const tabs = [
     { name: 'Data', to: '/data' },
     { name: 'Analysis', to: '/analysis' },
+    { name: 'Import/Export', to: '/io' },
 ]
 </script>
 

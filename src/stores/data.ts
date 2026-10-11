@@ -36,6 +36,14 @@ export const useDataStore = defineStore('data', () => {
         return true
     }
 
+    function serializeGameStates() {
+        return JSON.stringify(gameStates.value)
+    }
+
+    function deserializeGameStates(json: string) {
+        gameStates.value = JSON.parse(json)
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Spells of Restoration
     ////////////////////////////////////////////////////////////////////////////
@@ -72,6 +80,14 @@ export const useDataStore = defineStore('data', () => {
         return true
     }
 
+    function serializeSpells() {
+        return JSON.stringify(spells.value)
+    }
+
+    function deserializeSpells(json: string) {
+        spells.value = JSON.parse(json)
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Fixed Supporting Data
     ////////////////////////////////////////////////////////////////////////////
@@ -104,6 +120,25 @@ export const useDataStore = defineStore('data', () => {
         return bits
     }
 
+    function serialize() {
+        const parts = {
+            gameStates: serializeGameStates(),
+            spells: serializeSpells(),
+        }
+
+        return JSON.stringify(parts)
+    }
+
+    function deserialize(json: string) {
+        const parts = JSON.parse(json) as {
+            gameStates: string
+            spells: string
+        }
+
+        deserializeGameStates(parts.gameStates)
+        deserializeSpells(parts.spells)
+    }
+
     return {
         gameStates,
         addGameState,
@@ -115,5 +150,7 @@ export const useDataStore = defineStore('data', () => {
         nameCharacters,
         getBinaryStringFromCode,
         getBitsFromCode,
+        serialize,
+        deserialize,
     }
 })
