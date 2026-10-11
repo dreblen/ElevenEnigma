@@ -48,36 +48,18 @@ const analyze = async function() {
         bits: data.getBitsFromCode(s.code),
     }))
 
-    // Iterate possible starting positions and test as many codes from the set
-    // as necessary to confirm uniqueness. We may end up with more than one
-    // unique starting position, and it is those positions that are our output.
+    // Determine which starting bits result in unique values of the target size
     const uniqueStartingPositions = [] as number[]
     for (let testPosition = 0; testPosition < 1 + data.TARGET_BIT_LENGTH - targetNumBits.value; testPosition++) {
-        let isUnique = true
-
-        // We have to test every spell against the ones that come after it (not
-        // the ones before because they'd have already been evaluated, which
-        // also means we don't need to test the last spell as a starting point
-        // at all)
-        for (let testCode = 0; testCode < matchingSpells.value.length - 1; testCode++) {
-            const theseBits = spellBits[testCode]?.bits.slice(testPosition, testPosition+targetNumBits.value).join('')
-            
-            for (let nextCode = testCode + 1; nextCode < matchingSpells.value.length; nextCode++) {
-                const thoseBits = spellBits[nextCode]?.bits.slice(testPosition, testPosition+targetNumBits.value).join('')
-
-                if (theseBits === thoseBits) {
-                    isUnique = false
-                    break
-                }
-            }
-
-            // Stop short if we've already found a match
-            if (!isUnique) {
-                break
-            }
+        // Get all sets of bits from this starting position
+        const codeBits = new Set()
+        for (const spell of spellBits) {
+            codeBits.add(spell.bits.slice(testPosition, testPosition+targetNumBits.value).join(''))
         }
 
-        if (isUnique) {
+        // If the number of unique bit sets is the same as the number of overall
+        // sets, then this position was unique
+        if (codeBits.size === spellBits.length) {
             uniqueStartingPositions.push(testPosition)
         }
     }
