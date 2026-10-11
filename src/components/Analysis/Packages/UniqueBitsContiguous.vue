@@ -47,13 +47,12 @@ const analyze = async function() {
         id: s.id,
         bits: data.getBitsFromCode(s.code),
     }))
-    const BIT_LENGTH = 17 * 6
 
     // Iterate possible starting positions and test as many codes from the set
     // as necessary to confirm uniqueness. We may end up with more than one
     // unique starting position, and it is those positions that are our output.
     const uniqueStartingPositions = [] as number[]
-    for (let testPosition = 0; testPosition < 1 + BIT_LENGTH - targetNumBits.value; testPosition++) {
+    for (let testPosition = 0; testPosition < 1 + data.TARGET_BIT_LENGTH - targetNumBits.value; testPosition++) {
         let isUnique = true
 
         // We have to test every spell against the ones that come after it (not
@@ -152,6 +151,7 @@ const analyze = async function() {
                     Unique Starting Positions:
                 </p>
                 <v-btn-toggle
+                    v-if="startingPositions.length > 0"
                     v-model="vizStartingPositionIndex"
                     mandatory
                     color="secondary"
@@ -164,6 +164,9 @@ const analyze = async function() {
                         {{ pos }}
                     </v-btn>
                 </v-btn-toggle>
+                <p v-else class="text-body-1">
+                    None Found
+                </p>
             </v-col>
         </v-row>
         <v-row>

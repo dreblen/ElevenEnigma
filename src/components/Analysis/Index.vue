@@ -4,10 +4,10 @@ import { computed, ref } from 'vue'
 import UniqueBitsContiguous from './Packages/UniqueBitsContiguous.vue'
 
 const packageList = [
-    { seq: 1, name: 'Unique Bits (Contiguous)', component: UniqueBitsContiguous },
+    { name: 'Unique Bits (Contiguous)', component: UniqueBitsContiguous },
 ]
-const currentPackageSeq = ref(1)
-const currentPackage = computed(() => packageList.find(p => p.seq === currentPackageSeq.value ))
+const currentPackageName = ref(packageList[0]?.name)
+const currentPackage = computed(() => packageList.find(p => p.name === currentPackageName.value ))
 </script>
 
 <template>
@@ -15,11 +15,11 @@ const currentPackage = computed(() => packageList.find(p => p.seq === currentPac
         <v-row>
             <v-col>
                 <v-select
-                    v-model="currentPackageSeq"
+                    v-model="currentPackageName"
                     label="Package"
                     :items="packageList"
                     item-title="name"
-                    item-value="seq"
+                    item-value="name"
                 />
             </v-col>
         </v-row>

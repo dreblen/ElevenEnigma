@@ -92,6 +92,7 @@ export const useDataStore = defineStore('data', () => {
     // Fixed Supporting Data
     ////////////////////////////////////////////////////////////////////////////
 
+    const TARGET_BIT_LENGTH = 17 * 6
     const codeCharacters = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわがぎぐげござじずぜぞだぢづでどばびぶべぼ'
     const nameCharacters = '　あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわがぎぐげござじずぜぞだぢづでどばびぶべぼ'
 
@@ -146,6 +147,7 @@ export const useDataStore = defineStore('data', () => {
         spells,
         addSpell,
         removeSpell,
+        TARGET_BIT_LENGTH,
         codeCharacters,
         nameCharacters,
         getBinaryStringFromCode,
