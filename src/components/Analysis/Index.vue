@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
+import FixedBits from './FixedBits.vue'
 import UniqueBitsContiguous from './Packages/UniqueBitsContiguous.vue'
 
 const packageList = [
+    { name: 'Fixed Bits', component: FixedBits },
     { name: 'Unique Bits (Contiguous)', component: UniqueBitsContiguous },
 ]
 const currentPackageName = ref(packageList[0]?.name)
