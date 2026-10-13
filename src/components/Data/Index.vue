@@ -46,7 +46,7 @@ const spellTableItems = computed(() => data.spells.map(s => ({
     state: data.gameStates.find(gs => gs.id === s.gameStateId)?.seq || '???',
     character: s.characterName,
     code: s.code,
-    binaryCode: data.getBinaryStringFromCode(s.code),
+    binaryCode: data.getBinaryStringFromSpellCode(s.code),
 })))
 const filteredSpellTableItems = computed(() => {
     if (toggleShowDuplicatesOnly.value === true && duplicateCodes.value.length > 0) {

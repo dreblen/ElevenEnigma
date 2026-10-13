@@ -25,3 +25,8 @@ export interface RestorationSpell {
     restrictions: number // field of RestrictionFlag
     gameStateId: number // -> GameState.id
 }
+
+export enum EncodingMethod {
+    Raw = 0,
+    DQ1 = 1,
+}

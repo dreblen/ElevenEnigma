@@ -21,7 +21,7 @@ const matchingSpells = computed(() => data.spells.filter(s => s.characterName ==
 const fixedPositions = ref(undefined as number[]|undefined)
 const vizSpells = computed(() => matchingSpells.value.map(s => ({
     code: s.code,
-    bits: data.getBitsFromCode(s.code).join(''),
+    bits: data.getBitsFromSpellCode(s.code).join(''),
 })))
 
 const isAnalyzing = ref(false)
@@ -39,7 +39,7 @@ const analyze = async function() {
     // regenerate them repeatedly
     const spellBits = matchingSpells.value.map(s => ({
         id: s.id,
-        bits: data.getBitsFromCode(s.code),
+        bits: data.getBitsFromSpellCode(s.code),
     }))
 
     // Determine which bit positions never change

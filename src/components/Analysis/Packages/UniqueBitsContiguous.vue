@@ -25,7 +25,7 @@ const vizStartingPositionIndex = ref(undefined as number|undefined)
 const vizStartingPosition = computed(() => (startingPositions.value !== undefined && vizStartingPositionIndex.value !== undefined && startingPositions.value.length > vizStartingPositionIndex.value) ? startingPositions.value[vizStartingPositionIndex.value] : undefined)
 const vizSpells = computed(() => matchingSpells.value.map(s => ({
     code: s.code,
-    bits: data.getBitsFromCode(s.code).join(''),
+    bits: data.getBitsFromSpellCode(s.code).join(''),
 })))
 
 const isAnalyzing = ref(false)
@@ -45,7 +45,7 @@ const analyze = async function() {
     // regenerate them repeatedly
     const spellBits = matchingSpells.value.map(s => ({
         id: s.id,
-        bits: data.getBitsFromCode(s.code),
+        bits: data.getBitsFromSpellCode(s.code),
     }))
 
     // Determine which starting bits result in unique values of the target size

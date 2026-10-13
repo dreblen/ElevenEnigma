@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { useLocalStorage } from '@vueuse/core'
 
 import type * as EE from '@/types'
+import { EncodingMethod } from '@/types'
 
 export const useDataStore = defineStore('data', () => {
     ////////////////////////////////////////////////////////////////////////////
@@ -96,21 +97,60 @@ export const useDataStore = defineStore('data', () => {
     const codeCharacters = 'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわがぎぐげござじずぜぞだぢづでどばびぶべぼ'
     const nameCharacters = '　あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわがぎぐげござじずぜぞだぢづでどばびぶべぼ'
 
-    function getBinaryStringFromCode(code: string) {
-        const strings = [] as string[]
+    function getBytesFromSpellCode(code: string, method: EncodingMethod = EncodingMethod.Raw) {
+        // No matter what, we need the raw values extracted from the string
+        const rawBytes = [] as number[]
         for (const char of code) {
             const index = codeCharacters.indexOf(char)
             if (index !== -1) {
-                strings.push(index.toString(2).padStart(6,'0'))
+                rawBytes.push(index)
             }
+        }
+
+        // Determine our final values based on the specified method
+        switch (method) {
+            // Pure index values within our sorted character set
+            case EncodingMethod.Raw: {
+                return rawBytes
+            }
+            // Original encoding method was based on differences between
+            // positions rather than the values at the positions themselves
+            // https://qiita.com/yoshi389111/items/29ade2f62483e9c095d9
+            // https://github.com/yoshi389111/dq1pswd
+            case EncodingMethod.DQ1: {
+                if (rawBytes[0] === undefined) {
+                    return rawBytes
+                }
+
+                const bytes = [] as number[]
+                // Calculate the difference from the previous value (or 0) and
+                // subtract 4, adjusting for negative values in a way that makes
+                // ense for our 6-bit character set
+                for (let i = 0; i < rawBytes.length; i++) {
+                    const lastByte = rawBytes[i - 1] || 0
+                    const thisByte = rawBytes[i] as number
+                    const diff = 0x3f & (thisByte - lastByte - 4)
+
+                    bytes.push(diff)
+                }
+
+                return bytes
+            }
+        }
+    }
+
+    function getBinaryStringFromSpellCode(code: string, method: EncodingMethod = EncodingMethod.Raw) {
+        const strings = [] as string[]
+        for (const byte of getBytesFromSpellCode(code, method)) {
+            strings.push(byte.toString(2).padStart(6,'0'))
         }
 
         return strings.join(' ')
     }
 
-    function getBitsFromCode(code: string) {
+    function getBitsFromSpellCode(code: string, method: EncodingMethod = EncodingMethod.Raw) {
         // Get a binary string first, removing spaces
-        const stringVersion = getBinaryStringFromCode(code).replace(/\s+/g,'')
+        const stringVersion = getBinaryStringFromSpellCode(code, method).replace(/\s+/g,'')
 
         // Make our bit array from the numeric version of each character
         const bits = [] as number[]
@@ -150,8 +190,8 @@ export const useDataStore = defineStore('data', () => {
         TARGET_BIT_LENGTH,
         codeCharacters,
         nameCharacters,
-        getBinaryStringFromCode,
-        getBitsFromCode,
+        getBinaryStringFromSpellCode,
+        getBitsFromSpellCode,
         serialize,
         deserialize,
     }
