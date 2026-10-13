@@ -40,6 +40,13 @@ const spellTableItems = computed(() => data.spells.map(s => ({
     code: s.code,
     binaryCode: data.getBinaryStringFromCode(s.code),
 })))
+const filteredSpellTableItems = computed(() => {
+    if (toggleShowDuplicatesOnly.value === true && duplicateCodes.value.length > 0) {
+        return spellTableItems.value.filter(s => duplicateCodes.value.indexOf(s.code) !== -1)
+    }
+
+    return spellTableItems.value
+})
 const editSpellEdition = ref(SourceEdition.DS)
 const editSpellCharacterName = ref('')
 const editSpellRestrictions = ref([] as number[])
@@ -155,6 +162,23 @@ const onSpellImagesUpload = async function() {
 
     await worker.terminate()
 }
+
+const toggleShowDuplicatesOnly = ref(false)
+const codeCountSummary = computed(() => {
+    const summary = [] as { code: string; ids: number[] }[]
+
+    for (const spell of data.spells) {
+        const match = summary.find(s => s.code === spell.code)
+        if (match) {
+            match.ids.push(spell.id)
+        } else {
+            summary.push({ code: spell.code, ids: [spell.id] })
+        }
+    }
+
+    return summary
+})
+const duplicateCodes = computed(() => codeCountSummary.value.filter(s => s.ids.length > 1).map(s => s.code))
 </script>
 
 <template>
@@ -226,12 +250,21 @@ const onSpellImagesUpload = async function() {
         </v-row>
         <v-row>
             <v-col>
-                <v-data-table :items="spellTableItems">
+                <v-data-table :items="filteredSpellTableItems">
                     <template #top>
                         <v-toolbar>
                             <v-toolbar-title>
                                 Restoration Spells
                             </v-toolbar-title>
+                            <v-toolbar-items class="pr-3">
+                                <v-checkbox-btn
+                                    v-if="duplicateCodes.length > 0"
+                                    v-model="toggleShowDuplicatesOnly"
+                                    :label="`Show duplicates only? (${duplicateCodes.length})`"
+                                    class="text-error"
+                                >
+                                </v-checkbox-btn>
+                            </v-toolbar-items>
                             <v-dialog persistent>
                                 <template #activator="{ props }">
                                     <v-btn
