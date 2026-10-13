@@ -381,18 +381,18 @@ const duplicateCodes = computed(() => codeCountSummary.value.filter(s => s.ids.l
                                         <v-card-actions>
                                             <v-spacer />
                                             <v-btn
-                                                    @click="isActive.value = false"
-                                                    color="error"
-                                                >
-                                                    Close
-                                                </v-btn>
-                                                <v-btn
-                                                    color="success"
-                                                    @click="saveNewSpell(); isActive.value = false"
-                                                    :disabled="editSpellCharacterName.length == 0 || !editSpellGameState || editSpellCodes.length == 0"
-                                                >
-                                                    Save
-                                                </v-btn>
+                                                @click="isActive.value = false"
+                                                color="error"
+                                            >
+                                                Close
+                                            </v-btn>
+                                            <v-btn
+                                                color="success"
+                                                @click="saveNewSpell(); isActive.value = false"
+                                                :disabled="editSpellCharacterName.length == 0 || !editSpellGameState || editSpellCodes.length == 0"
+                                            >
+                                                Save
+                                            </v-btn>
                                         </v-card-actions>
                                     </v-card>
                                 </template>
