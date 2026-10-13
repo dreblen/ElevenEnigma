@@ -34,7 +34,15 @@ const restrictionFlags = [
     { value: RestrictionFlag.NoAction, title: 'Sometimes Cannot Act in Battle' },
 ]
 
+const spellTableHeaders = [
+    { title: 'State', key: 'state' },
+    { title: 'Character', key: 'character' },
+    { title: 'Code', key: 'code' },
+    { title: 'Binary Code', key: 'binaryCode' },
+    { title: 'Actions', key: 'actions' },
+]
 const spellTableItems = computed(() => data.spells.map(s => ({
+    id: s.id,
     state: data.gameStates.find(gs => gs.id === s.gameStateId)?.seq || '???',
     character: s.characterName,
     code: s.code,
@@ -250,7 +258,7 @@ const duplicateCodes = computed(() => codeCountSummary.value.filter(s => s.ids.l
         </v-row>
         <v-row>
             <v-col>
-                <v-data-table :items="filteredSpellTableItems">
+                <v-data-table :headers="spellTableHeaders" :items="filteredSpellTableItems">
                     <template #top>
                         <v-toolbar>
                             <v-toolbar-title>
@@ -398,6 +406,33 @@ const duplicateCodes = computed(() => codeCountSummary.value.filter(s => s.ids.l
                                 </template>
                             </v-dialog>
                         </v-toolbar>
+                    </template>
+                    <template #item.actions="{ item }">
+                        <v-dialog>
+                            <template #activator="{ props }">
+                                <v-icon v-bind="props">mdi-delete</v-icon>
+                            </template>
+                            <template #default="{ isActive }">
+                                <v-card title="Remove Spell?">
+                                    <v-card-text>
+                                        Are you sure you want to remove this spell?<br />
+                                        {{ item.code }}
+                                    </v-card-text>
+                                    <v-card-actions>
+                                        <v-spacer />
+                                        <v-btn @click="isActive.value = false">
+                                            Close
+                                        </v-btn>
+                                        <v-btn
+                                            color="error"
+                                            @click="data.removeSpell(item.id); isActive.value = false"
+                                        >
+                                            Remove
+                                        </v-btn>
+                                    </v-card-actions>
+                                </v-card>
+                            </template>
+                        </v-dialog>
                     </template>
                 </v-data-table>
             </v-col>
