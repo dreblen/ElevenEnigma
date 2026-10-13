@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 
-import FixedBits from './FixedBits.vue'
+import FixedBits from './Packages/FixedBits.vue'
 import UniqueBitsContiguous from './Packages/UniqueBitsContiguous.vue'
 
 const packageList = [
