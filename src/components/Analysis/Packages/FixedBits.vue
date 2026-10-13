@@ -1,25 +1,17 @@
 <script setup lang="ts">
 import { computed, nextTick, ref } from 'vue'
 
+import StateSelector from '../Elements/StateSelector.vue'
+import type { StateSelectorModel } from '../Elements/StateSelector.vue'
+
 import { useDataStore } from '@/stores/data'
 
 const data = useDataStore()
 
-const uniqueCharacterNames = computed(() => {
-    const names = new Set()
-    for (const spell of data.spells) {
-        names.add(spell.characterName)
-    }
+const stateSelection = ref({} as StateSelectorModel)
 
-    return [...names]
-})
-
-const characterName = ref(undefined as string|undefined)
-const gameStateId = ref(undefined as number|undefined)
-
-const matchingSpells = computed(() => data.spells.filter(s => s.characterName === characterName.value && s.gameStateId === gameStateId.value))
 const fixedPositions = ref(undefined as number[]|undefined)
-const vizSpells = computed(() => matchingSpells.value.map(s => ({
+const vizSpells = computed(() => stateSelection.value.spells.map(s => ({
     code: s.code,
     bits: data.getBitsFromSpellCode(s.code).join(''),
 })))
@@ -27,7 +19,7 @@ const vizSpells = computed(() => matchingSpells.value.map(s => ({
 const isAnalyzing = ref(false)
 const analyze = async function() {
     // Can't analyze if we have no codes
-    if (matchingSpells.value.length === 0) {
+    if (stateSelection.value.spells.length === 0) {
         return
     }
 
@@ -37,7 +29,7 @@ const analyze = async function() {
 
     // Store bits for each of our qualifying spells so we don't have to
     // regenerate them repeatedly
-    const spellBits = matchingSpells.value.map(s => ({
+    const spellBits = stateSelection.value.spells.map(s => ({
         id: s.id,
         bits: data.getBitsFromSpellCode(s.code),
     }))
@@ -74,30 +66,15 @@ const analyze = async function() {
             </p>
         </v-col>
     </v-row>
-    <v-row>
-        <v-col>
-            <v-select
-                v-model="characterName"
-                label="Character Name"
-                :items="uniqueCharacterNames"
-            />
-        </v-col>
-        <v-col>
-            <v-select
-                v-model="gameStateId"
-                label="Game State"
-                :items="data.gameStates"
-                item-title="name"
-                item-value="id"
-            />
-        </v-col>
-    </v-row>
+    <state-selector
+        v-model="stateSelection"
+    />
     <v-row>
         <v-col>
             <v-btn
                 color="primary"
                 :loading="isAnalyzing"
-                :disabled="isAnalyzing || !characterName || !gameStateId"
+                :disabled="isAnalyzing || !stateSelection.characterName || !stateSelection.gameStateId"
                 @click="analyze"
             >
                 Analyze
