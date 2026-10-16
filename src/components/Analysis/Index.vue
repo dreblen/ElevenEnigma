@@ -3,10 +3,12 @@ import { computed, ref } from 'vue'
 
 import FixedBits from './Packages/FixedBits.vue'
 import UniqueBitsContiguous from './Packages/UniqueBitsContiguous.vue'
+import UniqueBitsNoncontiguous from './Packages/UniqueBitsNoncontiguous.vue'
 
 const packageList = [
     { name: 'Fixed Bits', component: FixedBits },
     { name: 'Unique Bits (Contiguous)', component: UniqueBitsContiguous },
+    { name: 'Unique Bits (Noncontiguous)', component: UniqueBitsNoncontiguous },
 ]
 const currentPackageName = ref(packageList[0]?.name)
 const currentPackage = computed(() => packageList.find(p => p.name === currentPackageName.value ))
