@@ -90,10 +90,10 @@ const analyze = async function() {
 
         const finish = function () {
             if (pendingSeeds.length > 0) {
-                if (pendingSeeds.length >= referenceSeedPositions.value.length / 4) {
+                if (pendingSeeds.length <= referenceSeedPositions.value.length / 4) {
                     spawnNewWorker(1)
                 } else {
-                    spawnNewWorker(8)
+                    spawnNewWorker(4)
                 }
             } else {
                 isAnalyzing.value = false
@@ -148,8 +148,8 @@ const analyze = async function() {
 
         
         const message: AnalyzeWorkerTypes.InboundMessage = {
-            seedStart: seeds[0] as number,
-            seedEnd: Math.min(seeds[seeds.length - 1] as number + 1, 1 + data.TARGET_BIT_LENGTH - targetNumBits.value),
+            seedStart: seeds[seeds.length - 1] as number,
+            seedEnd: Math.min(seeds[0] as number + 1, 1 + data.TARGET_BIT_LENGTH - targetNumBits.value),
             spellBits,
             targetNumBits: targetNumBits.value,
             TARGET_BIT_LENGTH: data.TARGET_BIT_LENGTH,
@@ -158,7 +158,7 @@ const analyze = async function() {
     }
 
     for (let i = 0; i < numThreads; i++) {
-        spawnNewWorker(1)
+        spawnNewWorker(4)
     }
 }
 
