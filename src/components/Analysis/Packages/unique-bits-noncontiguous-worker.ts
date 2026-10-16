@@ -70,7 +70,6 @@ function analyze(message: InboundMessage) {
 
                 const parentLayer = forLayers[i - 1]
                 if (parentLayer !== undefined) {
-                    // console.log('Increasing parent iterator:', i, parentLayer.iterator, parentLayer.testValue)
                     parentLayer.iterator++
                 }
 
