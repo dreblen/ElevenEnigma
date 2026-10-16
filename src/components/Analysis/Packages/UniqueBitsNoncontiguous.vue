@@ -23,6 +23,7 @@ const referenceSeedPositions = computed(() => {
 })
 
 const bitPositions = ref(undefined as number[][]|undefined)
+const bitPositionsDataUrl = computed(() => `data:text/json;charset=UTF-8,${encodeURIComponent(JSON.stringify(bitPositions.value))}`)
 const vizBitPositionSelectionItems = computed(() => {
     if (bitPositions.value === undefined) {
         return []
@@ -178,6 +179,20 @@ onBeforeUnmount(() => {
         cancel()
     }
 })
+
+async function onImportPositionsUpload (ev: Event) {
+    if (!ev.target || !(ev.target as HTMLInputElement).files) {
+        return
+    }
+
+    const files = (ev.target as HTMLInputElement).files
+    if (!files || files.length === 0) {
+        return
+    }
+
+    const fileText = await (files[0] as File).text()
+    bitPositions.value = JSON.parse(fileText)
+}
 </script>
 
 <template>
@@ -227,6 +242,21 @@ onBeforeUnmount(() => {
                 </template>
             </v-btn>
         </v-col>
+        <v-col>
+            <v-btn
+                color="primary"
+                :disabled="isAnalyzing"
+                @click="($refs.uploadInput as HTMLInputElement).click()"
+            >
+                Upload Previous Analysis
+                <input
+                    type="file"
+                    class="d-none"
+                    ref="uploadInput"
+                    @change="onImportPositionsUpload"
+                />
+            </v-btn>
+        </v-col>
     </v-row>
     <v-row v-if="isAnalyzing">
         <v-col>
@@ -254,7 +284,25 @@ onBeforeUnmount(() => {
                     v-if="bitPositions.length > 0"
                     v-model="vizSelectedBitPositions"
                     :items="vizBitPositionSelectionItems"
-                />
+                >
+                    <template #append>
+                        <v-container>
+                            <v-row>
+                                <v-col class="px-0">
+                                    <v-btn
+                                        icon
+                                        density="comfortable"
+                                        :href="bitPositionsDataUrl"
+                                        target="_blank"
+                                        download="ee-unique-noncontiguous.json"
+                                    >
+                                        <v-icon>mdi-download</v-icon>
+                                    </v-btn>
+                                </v-col>
+                            </v-row>
+                        </v-container>
+                    </template>
+                </v-select>
                 <p v-else class="text-body-1">
                     None Found
                 </p>
