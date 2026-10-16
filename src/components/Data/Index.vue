@@ -345,7 +345,6 @@ const duplicateCodes = computed(() => codeCountSummary.value.filter(s => s.ids.l
                                                                                 v-for="(item, i) of imageUploadCarouselItems"
                                                                                 :src="item.dataUrl"
                                                                                 :value="i"
-                                                                                cover
                                                                             >
                                                                                 <template #placeholder>
                                                                                     <div class="d-flex align-center justify-center fill-height">
