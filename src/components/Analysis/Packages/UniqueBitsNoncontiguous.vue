@@ -12,7 +12,7 @@ import type * as AnalyzeWorkerTypes from '@/components/Analysis/Packages/unique-
 const data = useDataStore()
 
 const stateSelection = ref({} as StateSelectorModel)
-const targetNumBits = ref(6) // WIP: Should default to 1 instead
+const targetNumBits = ref(1)
 const referenceSeedPositions = computed(() => {
     const positions = []
     for (let i = 0; i < data.TARGET_BIT_LENGTH - targetNumBits.value; i++) {
@@ -34,7 +34,6 @@ const vizBitPositionSelectionItems = computed(() => {
     }
 })
 const vizSelectedBitPositions = ref(undefined as number[]|undefined)
-const vizNumBits = ref(1)
 const vizSpells = computed(() => stateSelection.value.spells.map(s => ({
     code: s.code,
     bits: data.getBitsFromSpellCode(s.code).join(''),
@@ -55,12 +54,11 @@ const analyze = async function() {
     isCancelling.value = false
     threadDisposeMethods.value = []
     bitPositions.value = undefined
-    vizNumBits.value = targetNumBits.value
     await nextTick()
 
     const spellBits = stateSelection.value.spells.map(s => data.getBitsFromSpellCode(s.code))
 
-    const numThreads = 4
+    const numThreads = navigator.hardwareConcurrency || 1
     const pendingSeeds = [...referenceSeedPositions.value]
     let numCompletedSeeds = 0.0
     let pendingProgress = 0.0
@@ -151,8 +149,9 @@ const analyze = async function() {
         
         const message: AnalyzeWorkerTypes.InboundMessage = {
             seedStart: seeds[0] as number,
-            seedEnd: Math.min(seeds[seeds.length - 1] as number + 1, 1 + data.TARGET_BIT_LENGTH - 6),
+            seedEnd: Math.min(seeds[seeds.length - 1] as number + 1, 1 + data.TARGET_BIT_LENGTH - targetNumBits.value),
             spellBits,
+            targetNumBits: targetNumBits.value,
             TARGET_BIT_LENGTH: data.TARGET_BIT_LENGTH,
         }
         w.postMessage(JSON.stringify(message))
@@ -208,7 +207,6 @@ onBeforeUnmount(() => {
                 v-model="targetNumBits"
                 label="# Bits"
                 :min="1"
-                disabled
             />
         </v-col>
     </v-row>
